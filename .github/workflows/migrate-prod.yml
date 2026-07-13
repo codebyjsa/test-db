@@ -21,10 +21,18 @@ jobs:
           cache: 'maven'
 
       - name: Run Liquibase Migrations
+        env:
+          DB_HOST: ${{ secrets.PROD_DB_HOST }}
+          DB_NAME: ${{ secrets.PROD_DB_NAME }}
+          DB_USER: ${{ secrets.PROD_DB_USERNAME }}
+          DB_PASS: ${{ secrets.PROD_DB_PASSWORD }}
         run: |
+          DB_HOST=$(echo "$DB_HOST" | xargs)
+          DB_NAME=$(echo "$DB_NAME" | xargs)
+          DB_USER=$(echo "$DB_USER" | xargs)
           mvn liquibase:update \
             -Dliquibase.changeLogFile=dbchangelog.xml \
-            -Dliquibase.url="jdbc:postgresql://${{ secrets.PROD_DB_HOST }}:5432/${{ secrets.PROD_DB_NAME }}?sslmode=require" \
-            -Dliquibase.username="${{ secrets.PROD_DB_USERNAME }}" \
-            -Dliquibase.password="${{ secrets.PROD_DB_PASSWORD }}" \
+            -Dliquibase.url="jdbc:postgresql://${DB_HOST}:5432/${DB_NAME}?sslmode=require" \
+            -Dliquibase.username="${DB_USER}" \
+            -Dliquibase.password="${DB_PASS}" \
             -Dliquibase.driver=org.postgresql.Driver
